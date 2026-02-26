@@ -1,9 +1,6 @@
 package com.nhiennhatt.bookstoreapi.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,16 +10,18 @@ import lombok.Setter;
 @Setter
 public class OrderCoupon extends Base {
 
-	@ManyToOne
-	private Order order;
+    @ManyToOne
+    @JoinColumn(name = "order_id", columnDefinition = "uuid", nullable = false)
+    private Order order;
 
-	@ManyToOne
-	private Coupon coupon;
+    @ManyToOne
+    @JoinColumn(name = "coupon_id", columnDefinition = "uuid", nullable = false)
+    private Coupon coupon;
 
-	@Column
-	private String type;
+    @Column(nullable = false)
+    private String type;
 
-	@Column(name = "discount_amount")
-	private int discountAmount;
+    @Column(name = "discount_amount", nullable = false)
+    private int discountAmount;
 
 }

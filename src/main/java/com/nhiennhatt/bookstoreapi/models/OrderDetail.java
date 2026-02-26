@@ -10,21 +10,21 @@ import lombok.Setter;
 @Setter
 public class OrderDetail extends Base {
 
-	@ManyToOne
-	@JoinColumn(name = "order_id", columnDefinition = "uuid")
-	private Order order;
+    @ManyToOne
+    @JoinColumn(name = "order_id", columnDefinition = "uuid", nullable = false)
+    private Order order;
 
-	@ManyToOne
-	@JoinColumn(name = "book_variant_id", columnDefinition = "uuid")
-	private BookVariant bookVariant;
+    @ManyToOne
+    @JoinColumn(name = "book_variant_id", columnDefinition = "uuid", nullable = false)
+    private BookVariant bookVariant;
 
-	@Column
-	private int quantity;
+    @Column(nullable = false)
+    private int quantity;
 
-	@Column(name = "unit_price")
-	private int unitPrice;
+    @Column(name = "unit_price", nullable = false)
+    private int unitPrice;
 
-	@Column(name = "total_price")
-	private int totalPrice;
+    @Column(name = "total_price", nullable = false)
+    private int totalPrice;
 
 }

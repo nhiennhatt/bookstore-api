@@ -14,31 +14,31 @@ import java.time.Instant;
 @Setter
 public class Campaign extends Base {
 
-	@Column
-	private String name;
+    @Column(nullable = false, length = 160)
+    private String name;
 
-	@Column(unique = true)
-	private String slug;
+    @Column(unique = true, nullable = false, length = 170)
+    private String slug;
 
-	@Column
-	private int priority;
+    @Column
+    private int priority;
 
-	@Column(name = "cover_img")
-	private String coverImg;
+    @Column(name = "cover_img", length = 180)
+    private String coverImg;
 
-	@Column(name = "thumb_img")
-	private String thumbImg;
+    @Column(name = "thumb_img", length = 180)
+    private String thumbImg;
 
-	@Column
-	private String status;
+    @Column(nullable = false)
+    private String status;
 
-	@Column(name = "theme_color")
-	private String themeColor;
+    @Column(name = "theme_color", length = 8)
+    private String themeColor;
 
-	@Column(name = "start_at")
-	private Instant startAt;
+    @Column(name = "start_at")
+    private Instant startAt;
 
-	@Column
-	private Instant endAt;
+    @Column(name = "end_at")
+    private Instant endAt;
 
 }

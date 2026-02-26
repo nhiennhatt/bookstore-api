@@ -11,16 +11,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PaymentMethod extends Base {
-    @Column
+    @Column(nullable = false, length = 15)
     private String name;
 
-    @Column(unique = true)
-    private String code;
-
-    @Column
+    @Column(length = 180)
     private String icon;
 
-    @Column
+    @Column(nullable = false)
     private boolean isActive = false;
 
     @Column
@@ -29,6 +26,6 @@ public class PaymentMethod extends Base {
     @Column
     private String config;
 
-    @Column
+    @Column(nullable = false)
     private String type;
 }

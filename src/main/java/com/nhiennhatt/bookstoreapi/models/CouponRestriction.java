@@ -10,14 +10,14 @@ import lombok.Setter;
 @Setter
 public class CouponRestriction extends Base {
 
-	@ManyToOne
-	@JoinColumn(name = "coupon_id", columnDefinition = "uuid")
-	private Coupon coupon;
+    @ManyToOne
+    @JoinColumn(name = "coupon_id", columnDefinition = "uuid", nullable = false)
+    private Coupon coupon;
 
-	@Column(name = "target_type")
-	private String targetType;
+    @Column(name = "target_type", nullable = false)
+    private String targetType;
 
-	@Column(name = "target_value")
-	private String targetValue;
+    @Column(name = "target_value", nullable = false)
+    private String targetValue;
 
 }

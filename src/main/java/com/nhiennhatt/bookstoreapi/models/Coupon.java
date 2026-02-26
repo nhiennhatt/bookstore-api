@@ -12,37 +12,37 @@ import lombok.Setter;
 @Setter
 public class Coupon extends Base {
 
-	@Column
-	private String name;
+    @Column(nullable = false, length = 100)
+    private String name;
 
-	@Column(unique = true)
-	private String code;
+    @Column(unique = true, nullable = false, length = 18)
+    private String code;
 
-	@Column(name = "calculation_type")
-	private String calculationType;
+    @Column(name = "calculation_type", nullable = false)
+    private String calculationType;
 
-	@Column
-	private float value;
+    @Column(nullable = false)
+    private float value;
 
-	@Column(name = "coupon_type")
-	private String couponType;
+    @Column(name = "coupon_type", nullable = false)
+    private String couponType;
 
-	@Column(name = "max_discount_amount")
-	private float maxDiscountAmount;
+    @Column(name = "max_discount_amount")
+    private float maxDiscountAmount;
 
-	@Column(name = "usage_limit_global")
-	private int usageLimitGlobal;
+    @Column(name = "usage_limit_global")
+    private int usageLimitGlobal;
 
-	@Column(name = "usage_limit_user")
-	private int usageLimitUser;
+    @Column(name = "usage_limit_user")
+    private int usageLimitUser;
 
-	@Column
-	private String status;
+    @Column(nullable = false)
+    private String status;
 
-	@Column(name = "start_at")
-	private long startAt;
+    @Column(name = "start_at")
+    private long startAt;
 
-	@Column(name = "end_at")
-	private long endAt;
+    @Column(name = "end_at")
+    private long endAt;
 
 }

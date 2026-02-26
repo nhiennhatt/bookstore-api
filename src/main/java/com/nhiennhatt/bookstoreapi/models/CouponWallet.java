@@ -13,12 +13,12 @@ import lombok.Setter;
 @Setter
 public class CouponWallet extends Base {
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", columnDefinition = "uuid")
-	private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id", columnDefinition = "uuid", nullable = false)
+    private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "coupon_id", columnDefinition = "uuid")
-	private Coupon coupon;
+    @ManyToOne
+    @JoinColumn(name = "coupon_id", columnDefinition = "uuid", nullable = false)
+    private Coupon coupon;
 
 }

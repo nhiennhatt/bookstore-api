@@ -13,12 +13,12 @@ import lombok.Setter;
 @Setter
 public class GroupBook extends Base {
 
-	@ManyToOne
-	@JoinColumn(name = "group_id", columnDefinition = "uuid")
-	private CollectionGroup group;
+    @ManyToOne
+    @JoinColumn(name = "group_id", columnDefinition = "uuid", nullable = false)
+    private CollectionGroup group;
 
-	@ManyToOne
-	@JoinColumn(name = "book_id", columnDefinition = "uuid")
-	private Book book;
+    @ManyToOne
+    @JoinColumn(name = "book_id", columnDefinition = "uuid", nullable = false)
+    private Book book;
 
 }

@@ -14,40 +14,40 @@ import java.time.Instant;
 @Table(name = "users")
 @Getter
 @Setter
-public class User extends Base{
+public class User extends Base {
 
-	@Column(unique = true)
-	private String username;
+    @Column(unique = true, nullable = false, length = 50)
+    private String username;
 
-	@Column(unique = true)
-	private String email;
+    @Column(unique = true, nullable = false, length = 360)
+    private String email;
 
-	@Column
-	private String password;
+    @Column(nullable = false, length = 180)
+    private String password;
 
-	@Enumerated(EnumType.STRING)
-	@Column(columnDefinition = "user_role")
-	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
-	private UserRole role;
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "user_role", nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserRole role;
 
-	@Enumerated(EnumType.STRING)
-	@Column(columnDefinition = "user_status")
-	@JdbcTypeCode(SqlTypes.NAMED_ENUM)
-	private UserStatus status = UserStatus.ACTIVE;
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "user_status", nullable = false)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserStatus status = UserStatus.ACTIVE;
 
-	@Column(name = "first_name")
-	private String firstName;
+    @Column(name = "first_name", length = 30)
+    private String firstName;
 
-	@Column(name = "last_name")
-	private String lastName;
+    @Column(name = "last_name", length = 30)
+    private String lastName;
 
-	@Column
-	private String avatar;
+    @Column(length = 180)
+    private String avatar;
 
-	@Column
-	private boolean verified = false;
+    @Column(nullable = false)
+    private boolean verified = false;
 
-	@Column(name = "verified_at")
-	private Instant verifiedAt;
+    @Column(name = "verified_at")
+    private Instant verifiedAt;
 
 }

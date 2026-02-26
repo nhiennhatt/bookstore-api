@@ -10,34 +10,34 @@ import lombok.Setter;
 @Setter
 public class Order extends Base {
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", columnDefinition = "uuid")
-	private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id", columnDefinition = "uuid", nullable = false)
+    private User user;
 
-	@ManyToOne
-	@JoinColumn(name = "address_id", columnDefinition = "uuid")
-	private UserAddress address;
+    @ManyToOne
+    @JoinColumn(name = "address_id", columnDefinition = "uuid", nullable = false)
+    private UserAddress address;
 
-	@Column
-	private String status;
+    @Column(nullable = false)
+    private String status;
 
-	@Column(name = "subtotal_price")
-	private int subtotalPrice;
+    @Column(name = "subtotal_price", nullable = false)
+    private int subtotalPrice;
 
-	@Column(name = "shipping_fee")
-	private int shippingFee;
+    @Column(name = "shipping_fee", nullable = false)
+    private int shippingFee;
 
-	@Column(name = "order_discount")
-	private int orderDiscount;
+    @Column(name = "order_discount")
+    private int orderDiscount;
 
-	@Column(name = "shipping_discount")
-	private int shippingDiscount;
+    @Column(name = "shipping_discount")
+    private int shippingDiscount;
 
-	@Column(name = "grand_total")
-	private int grandTotal;
+    @Column(name = "grand_total", nullable = false)
+    private int grandTotal;
 
-	@ManyToOne
-	@JoinColumn(name = "payment_method_id", columnDefinition = "uuid")
-	private PaymentMethod paymentMethod;
+    @ManyToOne
+    @JoinColumn(name = "payment_method_id", columnDefinition = "uuid", nullable = false)
+    private PaymentMethod paymentMethod;
 
 }

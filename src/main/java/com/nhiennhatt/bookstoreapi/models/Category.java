@@ -12,16 +12,16 @@ import lombok.Setter;
 @Table(name = "categories")
 public class Category extends Base {
 
-	@Column
-	private String name;
+    @Column(nullable = false)
+    private String name;
 
-	@Column(unique = true)
-	private String slug;
+    @Column(unique = true, nullable = false, length = 50)
+    private String slug;
 
-	@Column(name = "thumb_img")
-	private String thumbImg;
+    @Column(name = "thumb_img", length = 180)
+    private String thumbImg;
 
-	@Column(name = "is_public")
-	private boolean isPublic;
+    @Column(name = "is_public")
+    private boolean isPublic = false;
 
 }

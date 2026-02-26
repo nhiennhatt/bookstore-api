@@ -1,33 +1,41 @@
 package com.nhiennhatt.bookstoreapi.models;
 
+import com.nhiennhatt.bookstoreapi.common.enums.BookVariantStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "book_variants")
 @Getter
 @Setter
 public class BookVariant extends Base {
-	@Column
-	private String name;
+    @Column(nullable = false, length = 80)
+    private String name;
 
-	@Column(unique = true)
-	private String isbn;
+    @Column(unique = true, nullable = false, length = 13)
+    private String isbn;
 
-	@Column
-	private int originPrice;
+    @Column(name = "origin_price", nullable = false)
+    private int originPrice;
 
-	@Column
-	private int salePrice;
+    @Column(name = "sale_price")
+    private int salePrice;
 
-	@Column
-	private int inventory;
+    @Column
+    private int inventory = 0;
 
-	@Column
-	private String image;
+    @Column(length = 180)
+    private String image;
 
-	@ManyToOne
-	@JoinColumn(name = "book_id", columnDefinition = "uuid")
-	private Book book;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "book_variant_status")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private BookVariantStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id", columnDefinition = "uuid", nullable = false)
+    private Book book;
 }

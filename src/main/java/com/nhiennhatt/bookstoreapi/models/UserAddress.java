@@ -10,23 +10,23 @@ import lombok.Setter;
 @Setter
 public class UserAddress extends Base {
 
-	@ManyToOne
-	@JoinColumn(name = "user_id", columnDefinition = "uuid")
-	private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id", columnDefinition = "uuid", nullable = false)
+    private User user;
 
-	@Column
-	private String city;
+    @Column(nullable = false, length = 60)
+    private String city;
 
-	@Column
-	private String district;
+    @Column(nullable = false, length = 60)
+    private String district;
 
-	@Column
-	private String ward;
+    @Column(nullable = false, length = 60)
+    private String ward;
 
-	@Column
-	private String address;
+    @Column(nullable = false, length = 120)
+    private String address;
 
-	@Column(name = "is_default")
-	private boolean isDefault;
+    @Column(name = "is_default")
+    private boolean isDefault = false;
 
 }

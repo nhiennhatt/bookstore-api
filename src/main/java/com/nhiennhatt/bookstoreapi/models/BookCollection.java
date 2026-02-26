@@ -12,15 +12,15 @@ import lombok.Setter;
 @Setter
 public class BookCollection extends Base {
 
-	@Column
-	private String name;
+    @Column(nullable = false)
+    private String name;
 
-	@Column(name = "is_public")
-	private boolean isPublic;
+    @Column(name = "is_public", nullable = false)
+    private boolean isPublic = false;
 
-	@Column
-	private int priority;
+    @Column
+    private int priority;
 
-	@Column(name = "is_campaign")
-	private boolean isCampaign;
+    @Column(name = "is_campaign")
+    private boolean isCampaign = false;
 }
