@@ -6,11 +6,13 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -97,9 +99,9 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         });
 
-        return ResponseEntity.status(400)
+        return ResponseEntity.status(422)
                 .body(AppExceptionResponse.builder()
-                        .status(400)
+                        .status(422)
                         .errorCode("VALIDATION_ERROR")
                         .title("Validation error")
                         .detail(errors)
@@ -117,7 +119,7 @@ public class GlobalExceptionHandler {
                 Matcher matcher = pattern.matcher(constraintEx.getMessage());
                 if (matcher.find()) {
                     String columnName = matcher.group(1);
-                    Map<String, String> params = Map.of("column", columnName);
+                    Map<String, String> params = Map.of("field", columnName);
                     return ResponseEntity.status(400)
                             .body(AppExceptionResponse.builder()
                                     .status(400)
@@ -135,6 +137,19 @@ public class GlobalExceptionHandler {
                         .status(500)
                         .errorCode("INTERNAL_SERVER_ERROR")
                         .title("Internal server error")
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class
+    })
+    public ResponseEntity<AppExceptionResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(400)
+                .body(AppExceptionResponse.builder()
+                        .status(400)
+                        .errorCode("HTTP_MESSAGE_NOT_READABLE")
+                        .title("HTTP message not readable")
                         .build()
                 );
     }

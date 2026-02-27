@@ -3,16 +3,17 @@ package com.nhiennhatt.bookstoreapi.models;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @Entity
 @Table(name = "categories")
+@NoArgsConstructor
 public class Category extends Base {
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 80)
     private String name;
 
     @Column(unique = true, nullable = false, length = 50)
@@ -23,5 +24,4 @@ public class Category extends Base {
 
     @Column(name = "is_public")
     private boolean isPublic = false;
-
 }
