@@ -2,16 +2,18 @@ package com.nhiennhatt.bookstoreapi.controllers;
 
 import com.nhiennhatt.bookstoreapi.dto.user.CreateUserResponse;
 import com.nhiennhatt.bookstoreapi.dto.user.LoginResponse;
+import com.nhiennhatt.bookstoreapi.models.CustomUserDetails;
 import com.nhiennhatt.bookstoreapi.services.AuthService;
 import com.nhiennhatt.bookstoreapi.validations.user.CreateUserValidation;
 import com.nhiennhatt.bookstoreapi.validations.user.LoginValidation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;

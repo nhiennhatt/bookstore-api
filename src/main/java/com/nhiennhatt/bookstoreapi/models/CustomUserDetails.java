@@ -1,5 +1,6 @@
 package com.nhiennhatt.bookstoreapi.models;
 
+import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
 import com.nhiennhatt.bookstoreapi.common.enums.UserStatus;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,9 +11,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
-    private User user;
+    private CurrentUser user;
 
-    public CustomUserDetails(User user) {
+    public CustomUserDetails(CurrentUser user) {
         this.user = user;
     }
 
@@ -51,7 +52,7 @@ public class CustomUserDetails implements UserDetails {
         return user.getUsername();
     }
 
-    public User getUser() {
+    public CurrentUser getUser() {
         return user;
     }
 }

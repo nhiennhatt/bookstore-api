@@ -1,5 +1,6 @@
 package com.nhiennhatt.bookstoreapi.models;
 
+import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
 import com.nhiennhatt.bookstoreapi.common.enums.UserRole;
 import com.nhiennhatt.bookstoreapi.common.enums.UserStatus;
 import jakarta.persistence.*;
@@ -9,11 +10,22 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
+@SqlResultSetMapping(
+        name = "CurrentUserMapping",
+        classes = @ConstructorResult(targetClass = CurrentUser.class, columns = {
+                @ColumnResult(name = "id", type = UUID.class),
+                @ColumnResult(name = "username", type = String.class),
+                @ColumnResult(name = "role", type = UserRole.class),
+                @ColumnResult(name = "status", type = UserStatus.class),
+                @ColumnResult(name = "password", type = String.class)
+        })
+)
 public class User extends Base {
 
     @Column(unique = true, nullable = false, length = 50)

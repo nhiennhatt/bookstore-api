@@ -9,10 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -150,6 +152,20 @@ public class GlobalExceptionHandler {
                         .status(400)
                         .errorCode("HTTP_MESSAGE_NOT_READABLE")
                         .title("HTTP message not readable")
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({
+            HttpRequestMethodNotSupportedException.class,
+            NoResourceFoundException.class
+    })
+    public ResponseEntity<AppExceptionResponse> handleHttpRequestMethodNotSupportedException(Exception ex) {
+        return ResponseEntity.status(404)
+                .body(AppExceptionResponse.builder()
+                        .status(404)
+                        .errorCode("NOT_FOUND")
+                        .title("Not found")
                         .build()
                 );
     }
