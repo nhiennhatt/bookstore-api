@@ -1,13 +1,11 @@
 package com.nhiennhatt.bookstoreapi.repository.customs;
 
 import com.nhiennhatt.bookstoreapi.models.Category;
+import com.nhiennhatt.bookstoreapi.validations.category.UpdateCategoryValidation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -38,5 +36,22 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
         typedQuery.setMaxResults(limit);
 
         return typedQuery.getResultList();
+    }
+
+    @Override
+    public int partialUpdate(UpdateCategoryValidation category, String slug) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaUpdate<Category> updateQuery = cb.createCriteriaUpdate(Category.class);
+        Root<Category> root = updateQuery.from(Category.class);
+        if (category.getName().isPresent()) {
+            updateQuery.set(root.get("name"), category.getName().get());
+        }
+
+        if (category.getIsPublic().isPresent()) {
+            updateQuery.set(root.get("isPublic"), category.getIsPublic().get());
+        }
+
+        updateQuery.where(cb.equal(root.get("slug"), slug));
+        return entityManager.createQuery(updateQuery).executeUpdate();
     }
 }

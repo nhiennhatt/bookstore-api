@@ -8,6 +8,7 @@ import com.nhiennhatt.bookstoreapi.models.User;
 import com.nhiennhatt.bookstoreapi.services.CategoryService;
 import com.nhiennhatt.bookstoreapi.validations.category.CategoriesFilter;
 import com.nhiennhatt.bookstoreapi.validations.category.CreateCategoryValidation;
+import com.nhiennhatt.bookstoreapi.validations.category.UpdateCategoryValidation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -34,7 +35,7 @@ public class CategoryController {
     }
 
     @PreAuthorize("isAuthenticated() && hasRole('CONTENT_MANAGER')")
-    @PutMapping(path = "/{slug}/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "/{slug}/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Map<String, String>> uploadCategoryImage(
             @Valid @PathVariable String slug, @Valid @RequestParam("file") MultipartFile file
     ) {
@@ -55,5 +56,12 @@ public class CategoryController {
                 user
         );
         return ResponseEntity.ok(categories);
+    }
+
+    @PatchMapping("/{slug}")
+    @PreAuthorize("isAuthenticated() && hasRole('CONTENT_MANAGER')")
+    public ResponseEntity<Void> updateCategory(@PathVariable("slug") String slug, @Valid @RequestBody UpdateCategoryValidation category) {
+        categoryService.updateCategory(slug, category);
+        return ResponseEntity.ok().build();
     }
 }

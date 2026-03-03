@@ -11,6 +11,7 @@ import com.nhiennhatt.bookstoreapi.utils.MimeTypeUtil;
 import com.nhiennhatt.bookstoreapi.utils.RandomText;
 import com.nhiennhatt.bookstoreapi.utils.Slugify;
 import com.nhiennhatt.bookstoreapi.validations.category.CreateCategoryValidation;
+import com.nhiennhatt.bookstoreapi.validations.category.UpdateCategoryValidation;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,5 +104,10 @@ public class CategoryService {
         })).toList();
 
         return categories;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCategory(String slug, UpdateCategoryValidation category) {
+        categoryRepository.partialUpdate(category, slug);
     }
 }
