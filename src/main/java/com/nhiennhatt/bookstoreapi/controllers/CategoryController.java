@@ -3,8 +3,6 @@ package com.nhiennhatt.bookstoreapi.controllers;
 import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
 import com.nhiennhatt.bookstoreapi.dto.category.CreateCategoryResponse;
 import com.nhiennhatt.bookstoreapi.models.Category;
-import com.nhiennhatt.bookstoreapi.models.CustomUserDetails;
-import com.nhiennhatt.bookstoreapi.models.User;
 import com.nhiennhatt.bookstoreapi.services.CategoryService;
 import com.nhiennhatt.bookstoreapi.validations.category.CategoriesFilter;
 import com.nhiennhatt.bookstoreapi.validations.category.CreateCategoryValidation;
@@ -20,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController()
 @RequestMapping("/categories")
@@ -35,17 +34,22 @@ public class CategoryController {
     }
 
     @PreAuthorize("isAuthenticated() && hasRole('CONTENT_MANAGER')")
-    @PostMapping(path = "/{slug}/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(path = "/{id}/img", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<Map<String, String>> uploadCategoryImage(
-            @Valid @PathVariable String slug, @Valid @RequestParam("file") MultipartFile file
+            @Valid @PathVariable UUID id, @Valid @RequestParam("file") MultipartFile file
     ) {
-        categoryService.uploadCategoryImage(slug, file);
+        categoryService.uploadCategoryImage(id, file);
         return ResponseEntity.ok(Map.of("message", "Image uploaded successfully"));
     }
 
-    @GetMapping("/{slug}")
+    @GetMapping("/slug/{slug}")
     public ResponseEntity<Category> getCategory(@PathVariable("slug") String slug, @AuthenticationPrincipal CurrentUser user) {
         return ResponseEntity.ok(categoryService.getCategoryBySlug(slug, user == null ? null : user));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getCategory(@PathVariable("id") UUID id, @AuthenticationPrincipal CurrentUser user) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id, user == null ? null : user));
     }
 
     @GetMapping("")
@@ -58,10 +62,10 @@ public class CategoryController {
         return ResponseEntity.ok(categories);
     }
 
-    @PatchMapping("/{slug}")
+    @PatchMapping("/{id}")
     @PreAuthorize("isAuthenticated() && hasRole('CONTENT_MANAGER')")
-    public ResponseEntity<Void> updateCategory(@PathVariable("slug") String slug, @Valid @RequestBody UpdateCategoryValidation category) {
-        categoryService.updateCategory(slug, category);
+    public ResponseEntity<Void> updateCategory(@PathVariable("id") UUID id, @Valid @RequestBody UpdateCategoryValidation category) {
+        categoryService.updateCategory(id, category);
         return ResponseEntity.ok().build();
     }
 }

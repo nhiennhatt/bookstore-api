@@ -23,6 +23,10 @@ public class Slugify {
     }
 
     static public String slugify(String name, int padding) {
-        return slugify(name).substring(0, Math.min(name.length(), padding));
+        if (name.length() > padding) {
+            return slugify(name).substring(0, padding);
+        } else {
+            return slugify(name);
+        }
     }
 }

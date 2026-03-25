@@ -39,7 +39,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
     }
 
     @Override
-    public int partialUpdate(UpdateCategoryValidation category, String slug) {
+    public void partialUpdate(UpdateCategoryValidation category, UUID id) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaUpdate<Category> updateQuery = cb.createCriteriaUpdate(Category.class);
         Root<Category> root = updateQuery.from(Category.class);
@@ -51,7 +51,7 @@ public class CustomCategoryRepositoryImpl implements CustomCategoryRepository {
             updateQuery.set(root.get("isPublic"), category.getIsPublic().get());
         }
 
-        updateQuery.where(cb.equal(root.get("slug"), slug));
-        return entityManager.createQuery(updateQuery).executeUpdate();
+        updateQuery.where(cb.equal(root.get("id"), id));
+        entityManager.createQuery(updateQuery).executeUpdate();
     }
 }

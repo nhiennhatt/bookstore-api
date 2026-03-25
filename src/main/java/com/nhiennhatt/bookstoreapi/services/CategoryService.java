@@ -5,7 +5,6 @@ import com.nhiennhatt.bookstoreapi.common.enums.UserRole;
 import com.nhiennhatt.bookstoreapi.dto.category.CreateCategoryResponse;
 import com.nhiennhatt.bookstoreapi.exceptions.AppException;
 import com.nhiennhatt.bookstoreapi.models.Category;
-import com.nhiennhatt.bookstoreapi.models.User;
 import com.nhiennhatt.bookstoreapi.repository.CategoryRepository;
 import com.nhiennhatt.bookstoreapi.utils.MimeTypeUtil;
 import com.nhiennhatt.bookstoreapi.utils.RandomText;
@@ -20,19 +19,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 public class CategoryService {
-    private final Tika tika = new Tika();
+    private final Logger logger = LoggerFactory.getLogger(CategoryService.class);
     @Autowired
     private CategoryRepository categoryRepository;
     @Autowired
     private MinioService minioService;
-    private final Logger logger = LoggerFactory.getLogger(CategoryService.class);
 
     public CreateCategoryResponse createCategory(CreateCategoryValidation category) {
         String slug = Slugify.slugify(category.getName(), 70) + "-" + RandomText.randomText(9);
@@ -46,8 +42,8 @@ public class CategoryService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void uploadCategoryImage(String slug, MultipartFile file) {
-        Category category = categoryRepository.findCategoryBySlug(slug);
+    public void uploadCategoryImage(UUID id, MultipartFile file) {
+        Category category = categoryRepository.findCategoryById(id);
         if (category == null)
             throw new AppException("Category not found", "CATEGORY_NOT_FOUND", 404, null, null);
 
@@ -87,6 +83,24 @@ public class CategoryService {
         return category;
     }
 
+    public Category getCategoryById(UUID id, CurrentUser currentUser) {
+        Category category = categoryRepository.findCategoryById(id);
+        if (category == null
+                || (!category.isPublic() && (currentUser == null || currentUser.getRole() == UserRole.ROLE_CUSTOMER))
+        )
+            throw new AppException("Category not found", "CATEGORY_NOT_FOUND", 404, null, null);
+
+        if (category.getThumbImg() != null) {
+            try {
+                category.setThumbImg(minioService.getPresignedUrl(category.getThumbImg()));
+            } catch (Exception e) {
+                logger.error("Error generating presigned URL: {}", e.getMessage());
+                category.setThumbImg(null);
+            }
+        }
+        return category;
+    }
+
     public List<Category> getAllCategories(UUID cursor, Integer limit, Boolean isPublic, CurrentUser currentUser) {
         if (currentUser == null || currentUser.getRole() == UserRole.ROLE_CUSTOMER) {
             isPublic = true;
@@ -107,7 +121,7 @@ public class CategoryService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void updateCategory(String slug, UpdateCategoryValidation category) {
-        categoryRepository.partialUpdate(category, slug);
+    public void updateCategory(UUID id, UpdateCategoryValidation category) {
+        categoryRepository.partialUpdate(category, id);
     }
 }

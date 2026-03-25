@@ -1,16 +1,24 @@
 package com.nhiennhatt.bookstoreapi.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.nhiennhatt.bookstoreapi.common.enums.BookStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
+
+import java.util.UUID;
 
 @Entity
 @Table(name = "books")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category"})
 public class Book extends Base {
     @Column(nullable = false, length = 160)
     private String name;
@@ -35,9 +43,18 @@ public class Book extends Base {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private BookStatus status;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column
     private String properties;
 
     @Column(length = 180)
     private String image;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(name = "category_id", insertable = false, updatable = false)
+    private UUID categoryId;
 }

@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface CustomCategoryRepository {
     List<Category> pagination(UUID cursor, int limit, Boolean isPublic);
-    int partialUpdate(UpdateCategoryValidation category, String slug);
+    void partialUpdate(UpdateCategoryValidation category, UUID id);
 }
