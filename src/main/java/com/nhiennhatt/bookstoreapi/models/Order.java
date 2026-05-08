@@ -43,6 +43,9 @@ public class Order extends Base {
     @Column(name = "payment_code")
     private String paymentCode;
 
+    @Column(name = "total_weight", nullable = false)
+    private int totalWeight;
+
     @Column(name = "payment_client_secret")
     private String paymentClientSecret;
 

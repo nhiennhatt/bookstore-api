@@ -1,8 +1,6 @@
 package com.nhiennhatt.bookstoreapi.services;
 
-import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
-import com.nhiennhatt.bookstoreapi.common.classes.GHNCalShippingFeeBody;
-import com.nhiennhatt.bookstoreapi.common.classes.GHNCalShippingFeeResponse;
+import com.nhiennhatt.bookstoreapi.common.classes.*;
 import com.nhiennhatt.bookstoreapi.common.enums.BookStatus;
 import com.nhiennhatt.bookstoreapi.common.enums.BookVariantStatus;
 import com.nhiennhatt.bookstoreapi.common.enums.OrderStatus;
@@ -159,6 +157,31 @@ public class OrderService {
         Order order = orderRepository.findOrderById(UUID.fromString(orderId));
         if (order == null) return;
         order.setStatus(OrderStatus.SHIPPING);
+        String shippingOrderCode = GHNUtil.createShippingOrder(
+                ghnToken,
+                GHNCreateOrderBody.builder()
+                        .shopId(shopId)
+                        .weight(order.getTotalWeight())
+                        .toWardCode(order.getAddress().getWardCode())
+                        .toDistrictId(order.getAddress().getProvinceId())
+                        .toAddress(order.getAddress().getAddress())
+                        .toPhone(order.getAddress().getPhone())
+                        .toName(order.getAddress().getName())
+                        .fromName("NhienNhat")
+                        .requiredNote("CHOXEMHANGKHONGTHU")
+                        .paymentTypeId(1)
+                        .items(
+                                order.getDetails().stream().map(d ->
+                                        GHNCreateOrderBody.GHNOrderItem.builder()
+                                                .name(d.getBookVariant().getName())
+                                                .quantity(d.getQuantity())
+                                                .build()
+                                ).toList()
+                        )
+                        .serviceTypeId(2)
+                        .build()
+        );
+        order.setDeliveryCode(shippingOrderCode);
         orderRepository.save(order);
     }
 
@@ -221,6 +244,7 @@ public class OrderService {
         order.setAddress(address);
         order.setUser(userRepository.getReferenceById(user.getId()));
         order.setStatus(OrderStatus.PAYING);
+        order.setTotalWeight(totalWeight);
 
 
         List<OrderDetail> details = mappedVariants.entrySet().stream().map(v -> {
