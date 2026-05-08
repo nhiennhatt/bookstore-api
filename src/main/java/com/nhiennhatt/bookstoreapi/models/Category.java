@@ -24,4 +24,7 @@ public class Category extends Base {
 
     @Column(name = "is_public")
     private boolean isPublic = false;
+
+    @Column(name = "is_featured")
+    private boolean isFeatured = false;
 }

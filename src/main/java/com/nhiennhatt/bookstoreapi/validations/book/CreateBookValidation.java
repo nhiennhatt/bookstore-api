@@ -1,9 +1,7 @@
 package com.nhiennhatt.bookstoreapi.validations.book;
 
 import com.nhiennhatt.bookstoreapi.common.enums.BookStatus;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,6 +22,10 @@ public class CreateBookValidation {
     private String distributor;
 
     private UUID categoryId;
+
+    @Size(min = 8, max = 80)
+    @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    private String slug;
 
     @NotNull
     @Pattern(regexp = "ACTIVE|INACTIVE|COMING_SOON|DISCONTINUED")

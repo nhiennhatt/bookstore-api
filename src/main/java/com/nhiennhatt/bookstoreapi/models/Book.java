@@ -9,6 +9,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.type.SqlTypes;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "category", "variants"})
 public class Book extends Base {
     @Column(nullable = false, length = 160)
     private String name;
@@ -57,4 +58,8 @@ public class Book extends Base {
 
     @Column(name = "category_id", insertable = false, updatable = false)
     private UUID categoryId;
+
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id")
+    private List<BookVariant> variants;
 }

@@ -17,24 +17,24 @@ import java.time.temporal.TemporalAmount;
 import java.util.Base64;
 
 public class JwtUtil {
-    private final String accessTokenPublicKeyStr;
-    private final String accessTokenPrivateKeyStr;
+    private final String publicKeyStr;
+    private final String privateKeyStr;
     private final TemporalAmount expiresIn;
 
-    public JwtUtil(String accessTokenPublicKeyStr, String accessTokenPrivateKeyStr, TemporalAmount expiresIn) {
-        this.accessTokenPublicKeyStr = accessTokenPublicKeyStr;
-        this.accessTokenPrivateKeyStr = accessTokenPrivateKeyStr;
+    public JwtUtil(String publicKeyStr, String privateKeyStr, TemporalAmount expiresIn) {
+        this.publicKeyStr = publicKeyStr;
+        this.privateKeyStr = privateKeyStr;
         this.expiresIn = expiresIn;
     }
 
     private RSAPrivateKey loadPrivateKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] privateKeyBytes = Base64.getDecoder().decode(accessTokenPrivateKeyStr);
+        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyStr);
         PKCS8EncodedKeySpec pkcs8KeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
         return (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(pkcs8KeySpec);
     }
 
     private RSAPublicKey loadPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] publicKeyBytes = Base64.getDecoder().decode(accessTokenPublicKeyStr);
+        byte[] publicKeyBytes = Base64.getDecoder().decode(publicKeyStr);
         X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicKeyBytes);
         return (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(keySpec);
     }

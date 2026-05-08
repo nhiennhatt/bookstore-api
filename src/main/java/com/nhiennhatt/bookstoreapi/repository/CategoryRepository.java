@@ -14,4 +14,5 @@ public interface CategoryRepository extends JpaRepository<Category, UUID>, Custo
     Category findCategoryBySlug(String slug);
     Category findCategoryById(UUID id);
     Category getReferenceById(UUID id);
+    boolean existsCategoryBySlug(String slug);
 }

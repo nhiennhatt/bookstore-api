@@ -38,12 +38,15 @@ public class BookVariant extends Base {
     @Column(length = 180)
     private String image;
 
+    @Column
+    private int weight;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "book_variant_status")
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private BookVariantStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "book_id", columnDefinition = "uuid", nullable = false)
     private Book book;

@@ -2,19 +2,20 @@ package com.nhiennhatt.bookstoreapi.services;
 
 import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
 import com.nhiennhatt.bookstoreapi.common.enums.BookStatus;
+import com.nhiennhatt.bookstoreapi.common.enums.BookVariantStatus;
 import com.nhiennhatt.bookstoreapi.common.enums.UserRole;
+import com.nhiennhatt.bookstoreapi.dto.books.BookDetailDto;
+import com.nhiennhatt.bookstoreapi.dto.books.BookOverviewDto;
 import com.nhiennhatt.bookstoreapi.exceptions.AppException;
 import com.nhiennhatt.bookstoreapi.models.Book;
 import com.nhiennhatt.bookstoreapi.models.Category;
 import com.nhiennhatt.bookstoreapi.repository.BookRepository;
 import com.nhiennhatt.bookstoreapi.repository.CategoryRepository;
 import com.nhiennhatt.bookstoreapi.utils.MimeTypeUtil;
-import com.nhiennhatt.bookstoreapi.utils.RandomText;
 import com.nhiennhatt.bookstoreapi.utils.Slugify;
 import com.nhiennhatt.bookstoreapi.validations.book.BookFilter;
 import com.nhiennhatt.bookstoreapi.validations.book.CreateBookValidation;
 import com.nhiennhatt.bookstoreapi.validations.book.UpdateBookValidation;
-import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,7 @@ public class BookService {
 
     @Transactional
     public Book createBook(CreateBookValidation bookValidation) {
-        String slug = Slugify.slugify(bookValidation.getName(), 70) + "-" + RandomText.randomText(9);
+        String slug = bookValidation.getSlug() != null ? bookValidation.getSlug() : Slugify.slugify(bookValidation.getName(), 80);
         Category category = bookValidation.getCategoryId() != null ? categoryRepository.getReferenceById(bookValidation.getCategoryId()) : null;
 
         Book book = Book.builder()
@@ -44,6 +45,7 @@ public class BookService {
                 .description(bookValidation.getDescription())
                 .author(bookValidation.getAuthor())
                 .publisher(bookValidation.getPublisher())
+                .distributor(bookValidation.getDistributor())
                 .status(bookValidation.getStatus())
                 .category(category)
                 .categoryId(category != null ? bookValidation.getCategoryId() : null)
@@ -78,21 +80,32 @@ public class BookService {
         bookRepository.updateCategory(id, category);
     }
 
-    public Book getBook(UUID id, CurrentUser user) {
-        Book book = bookRepository.getBookById(id);
-        if (book == null)
+    public BookDetailDto getBook(UUID id, CurrentUser user) {
+        BookDetailDto book = bookRepository.getBookDetailDtoById(id);
+        if (book == null || (book.getStatus() == BookStatus.INACTIVE && (user == null || user.getRole() == UserRole.ROLE_CUSTOMER)))
             throw new AppException("Book not found", "BOOK_NOT_FOUND", 404, null, null);
-        if (book.getStatus() == BookStatus.INACTIVE && (user == null || user.getRole() == UserRole.ROLE_CUSTOMER))
-            throw new AppException("Book is not available", "BOOK_NOT_AVAILABLE", 404, null, null);
+        if (book.getImage() != null) {
+            try {
+                book.setImage(minioService.getPresignedUrl(book.getImage()));
+            } catch (Exception e) {
+                book.setImage(null);
+            }
+        }
         return book;
     }
 
-    public Book getBook(String slug, CurrentUser user) {
-        Book book = bookRepository.getBookBySlug(slug);
-        if (book == null)
+    public BookDetailDto getBook(String slug, CurrentUser user) {
+        BookDetailDto book = bookRepository.getBookDetailDtoBySlug(slug);
+        System.out.println(book == null);
+        if (book == null || (book.getStatus() == BookStatus.INACTIVE && (user == null || user.getRole() == UserRole.ROLE_CUSTOMER)))
             throw new AppException("Book not found", "BOOK_NOT_FOUND", 404, null, null);
-        if (book.getStatus() == BookStatus.INACTIVE && (user == null || user.getRole() == UserRole.ROLE_CUSTOMER))
-            throw new AppException("Book is not available", "BOOK_NOT_AVAILABLE", 404, null, null);
+        if (book.getImage() != null) {
+            try {
+                book.setImage(minioService.getPresignedUrl(book.getImage()));
+            } catch (Exception e) {
+                book.setImage(null);
+            }
+        }
         return book;
     }
 
@@ -101,12 +114,25 @@ public class BookService {
         return book.getCategory();
     }
 
-    public List<Book> getBooks(BookFilter filter) {
-        return bookRepository.getBooks(filter);
+    public List<BookOverviewDto> getBookOverviews(BookFilter filter, CurrentUser user) {
+        if (user == null || user.getRole() == UserRole.ROLE_CUSTOMER) {
+            filter.setBookStatus(BookStatus.ACTIVE);
+            filter.setVariantStatus(BookVariantStatus.ACTIVE);
+            filter.setIsStockValid(true);
+        }
+
+        return bookRepository.getBookOverviews(filter).stream().peek(bookOverviewDto -> {
+            try {
+                if (bookOverviewDto.getImage() != null)
+                    bookOverviewDto.setImage(minioService.getPresignedUrl(bookOverviewDto.getImage()));
+            } catch (Exception e) {
+                bookOverviewDto.setImage(null);
+            }
+        }).toList();
     }
 
     @Transactional
-    public void updateBookImage(UUID id, MultipartFile file) {
+    public String updateBookImage(UUID id, MultipartFile file) {
         Book book = bookRepository.getBookById(id);
         if (book == null)
             throw new AppException("Book not found", "BOOK_NOT_FOUND", 404, null, null);
@@ -124,10 +150,11 @@ public class BookService {
 
         try {
             String extension = MimeTypeUtil.getExtension(file.getInputStream());
-            String fileName = String.format("books/%s/%s-%s%s", book.getId().toString(), book.getSlug(), RandomText.randomText(9), extension);
+            String fileName = String.format("books/%s/%s%s", book.getId(), book.getId(), extension);
             minioService.uploadFile(file, fileName);
             book.setImage(fileName);
             bookRepository.save(book);
+            return minioService.getPresignedUrl(fileName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

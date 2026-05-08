@@ -2,6 +2,7 @@ package com.nhiennhatt.bookstoreapi.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,8 +20,5 @@ public class BookCollection extends Base {
     private boolean isPublic = false;
 
     @Column
-    private int priority;
-
-    @Column(name = "is_campaign")
-    private boolean isCampaign = false;
+    private int priority = 100;
 }

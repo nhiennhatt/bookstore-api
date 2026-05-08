@@ -15,6 +15,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authorization.DefaultAuthorizationManagerFactory;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -48,7 +49,9 @@ public class DefaultSecurityConfig {
     @Bean
     public MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-        handler.setRoleHierarchy(roleHierarchy);
+        DefaultAuthorizationManagerFactory factory = new DefaultAuthorizationManagerFactory();
+        factory.setRoleHierarchy(roleHierarchy);
+        handler.setAuthorizationManagerFactory(factory);
         return handler;
     }
 
@@ -63,6 +66,14 @@ public class DefaultSecurityConfig {
             @Value("${jwt.access.private}") String privateKey,
             @Value("${jwt.access.expires-in-minutes}") int expiresInMinutes
     ) {
+        return new JwtUtil(publicKey, privateKey, Duration.ofMinutes(expiresInMinutes));
+    }
+
+    @Bean
+    public JwtUtil refreshTokenService(
+            @Value("${jwt.refresh.public}") String publicKey,
+            @Value("${jwt.refresh.private}") String privateKey,
+            @Value("${jwt.refresh.expires-in-minutes}") int expiresInMinutes) {
         return new JwtUtil(publicKey, privateKey, Duration.ofMinutes(expiresInMinutes));
     }
 

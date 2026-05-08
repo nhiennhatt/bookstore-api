@@ -13,14 +13,15 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -94,7 +95,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             MethodArgumentNotValidException.class
     })
-    public ResponseEntity<AppExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+    public ResponseEntity<AppExceptionResponse<Map<String, String>>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult().getFieldErrors().forEach(error -> {
@@ -102,11 +103,49 @@ public class GlobalExceptionHandler {
         });
 
         return ResponseEntity.status(422)
-                .body(AppExceptionResponse.builder()
+                .body(AppExceptionResponse.<Map<String, String>>builder()
                         .status(422)
                         .errorCode("VALIDATION_ERROR")
                         .title("Validation error")
                         .detail(errors)
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({
+            HandlerMethodValidationException.class
+    })
+    public ResponseEntity<AppExceptionResponse> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getParameterValidationResults().forEach(result -> {
+            if (!result.getResolvableErrors().isEmpty()) {
+                errors.put(
+                        result.getMethodParameter().getParameterName(),
+                        result.getResolvableErrors().get(0).getDefaultMessage()
+                );
+            }
+        });
+        return ResponseEntity.status(422)
+                .body(
+                        AppExceptionResponse.builder()
+                                .status(422)
+                                .errorCode("VALIDATION_ERROR")
+                                .title("Validation error")
+                                .detail(errors)
+                                .build()
+                );
+    }
+
+    @ExceptionHandler({
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<AppExceptionResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.status(422)
+                .body(AppExceptionResponse.builder()
+                        .status(422)
+                        .errorCode("VALIDATION_ERROR")
+                        .title("Validation error")
+                        .detail(Map.of(Objects.requireNonNullElse(ex.getParameter().getParameterName(), "Error"), "Invalid type"))
                         .build()
                 );
     }

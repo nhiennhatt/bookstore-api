@@ -9,5 +9,8 @@ import java.util.UUID;
 @Getter
 public class CreateCategoryResponse {
     private UUID id;
+    private String name;
     private String slug;
+    private boolean isFeatured;
+    private boolean isPublic;
 }

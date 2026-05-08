@@ -5,7 +5,9 @@ import com.nhiennhatt.bookstoreapi.dto.user.LoginResponse;
 import com.nhiennhatt.bookstoreapi.models.CustomUserDetails;
 import com.nhiennhatt.bookstoreapi.services.AuthService;
 import com.nhiennhatt.bookstoreapi.validations.user.CreateUserValidation;
+import com.nhiennhatt.bookstoreapi.validations.user.GetTokenValidation;
 import com.nhiennhatt.bookstoreapi.validations.user.LoginValidation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Auth", description = "The Auth API")
 public class AuthController {
     @Autowired
     private AuthService authService;
@@ -37,7 +40,13 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginValidation loginValidation) {
-        String token = authService.loginUser(loginValidation.getUsername(), loginValidation.getPassword());
-        return ResponseEntity.ok(LoginResponse.builder().token(token).build());
+        LoginResponse res = authService.loginUser(loginValidation.getUsername(), loginValidation.getPassword());
+        return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/token")
+    public ResponseEntity<LoginResponse> getToken(@Valid @RequestBody GetTokenValidation body) {
+        LoginResponse res = authService.refreshToken(body.getRefreshToken());
+        return ResponseEntity.ok(res);
     }
 }

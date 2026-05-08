@@ -7,6 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CustomCategoryRepository {
-    List<Category> pagination(UUID cursor, int limit, Boolean isPublic);
+    List<Category> pagination(UUID cursor, int limit, Boolean isPublic, Boolean isFeatured, String keyword);
     void partialUpdate(UpdateCategoryValidation category, UUID id);
 }

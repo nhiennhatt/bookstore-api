@@ -1,18 +1,22 @@
 package com.nhiennhatt.bookstoreapi.repository.customs;
 
+import com.nhiennhatt.bookstoreapi.common.classes.BookQuery;
+import com.nhiennhatt.bookstoreapi.common.enums.BookStatus;
+import com.nhiennhatt.bookstoreapi.common.enums.BookVariantStatus;
+import com.nhiennhatt.bookstoreapi.dto.books.BookOverviewDto;
 import com.nhiennhatt.bookstoreapi.models.Book;
+import com.nhiennhatt.bookstoreapi.utils.BookQueryBuilder;
 import com.nhiennhatt.bookstoreapi.validations.book.BookFilter;
 import com.nhiennhatt.bookstoreapi.validations.book.UpdateBookValidation;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 public class CustomBookRepositoryImpl implements CustomBookRepository {
@@ -37,6 +41,10 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
             updateQuery.set(root.get("author"), book.getAuthor().get());
         }
 
+        if (book.getSlug().isPresent()) {
+            updateQuery.set(root.get("slug"), book.getSlug().get());
+        }
+
         if (book.getPublisher().isPresent()) {
             updateQuery.set(root.get("publisher"), book.getPublisher().get());
         }
@@ -54,26 +62,41 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
         int result = query.executeUpdate();
     }
 
+    /*
+     * Get book overview
+     */
     @Override
-    public List<Book> getBooks(BookFilter bookFilter) {
+    public List<BookOverviewDto> getBookOverviews(BookFilter filter) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Book> query = builder.createQuery(Book.class);
-        Root<Book> root = query.from(Book.class);
-        query.select(root);
-        ArrayList<Predicate> predicates = new ArrayList<>();
-        if (bookFilter.getCategoryId() != null) {
-            predicates.add(builder.equal(root.get("category").get("id"), bookFilter.getCategoryId()));
-        }
+        CriteriaQuery<Tuple> query = builder.createQuery(Tuple.class);
+        Root<Book> book = query.from(Book.class);
+        BookQuery bookQuery = BookQueryBuilder.create(builder, filter, book);
 
-        if (bookFilter.getCursor() != null) {
-            predicates.add(builder.lessThan(root.get("id"), bookFilter.getCursor()));
-        }
+        query.select(builder.tuple(bookQuery.getSelections()))
+                .where(bookQuery.getPredicates())
+                .groupBy(bookQuery.getGroupByExpressions())
+                .having(bookQuery.getHavingPredicates())
+                .orderBy(builder.desc(book.get("id")));
 
-        query.where(builder.and(predicates.toArray(new Predicate[0])));
+        TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+        typedQuery.setMaxResults(filter.getLimit());
 
-        query.orderBy(builder.desc(root.get("id")));
-        TypedQuery<Book> typedQuery = entityManager.createQuery(query);
-        typedQuery.setMaxResults(bookFilter.getLimit() != null ? bookFilter.getLimit() : 10);
-        return typedQuery.getResultList();
+        List<Tuple> result = typedQuery.getResultList();
+
+        return result.stream().map(t -> BookOverviewDto.builder()
+                .id(t.get("id", UUID.class))
+                .image(t.get("image", String.class))
+                .name(t.get("name", String.class))
+                .slug(t.get("slug", String.class))
+                .categoryName(t.get("categoryName", String.class))
+                .author(t.get("author", String.class))
+                .publisher(t.get("publisher", String.class))
+                .distributor(t.get("distributor", String.class))
+                .totalStock(t.get("totalStock", Long.class))
+                .validStock(t.get("validStock", Long.class))
+                .variantStatus(t.get("variantStatus", BookVariantStatus.class))
+                .status(t.get("status", BookStatus.class))
+                .salePrice(t.get("salePrice", Integer.class))
+                .build()).toList();
     }
 }
