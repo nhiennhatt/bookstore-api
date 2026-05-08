@@ -1,9 +1,6 @@
 package com.nhiennhatt.bookstoreapi.utils;
 
-import com.nhiennhatt.bookstoreapi.common.classes.GHNCalShippingFeeBody;
-import com.nhiennhatt.bookstoreapi.common.classes.GHNCalShippingFeeResponse;
-import com.nhiennhatt.bookstoreapi.common.classes.GHNCreateOrderBody;
-import com.nhiennhatt.bookstoreapi.common.classes.GHNCreateOrderResponse;
+import com.nhiennhatt.bookstoreapi.common.classes.GHN.*;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -12,6 +9,8 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public class GHNUtil {
@@ -58,11 +57,76 @@ public class GHNUtil {
             HttpResponse<Supplier<GHNCreateOrderResponse>> response = client.send(request, asJson(GHNCreateOrderResponse.class));
 
             if (response.statusCode() != 200) {
-                System.out.println(response.body().get().getMessage());
                 return null;
             }
 
             return response.body().get().getData().getOrderCode();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<GHNProvinceResponse.GHNProvinceData> getProvinces(String token) {
+        try {
+            URI uri = new URI("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Content-Type", "application/json")
+                    .header("token", token)
+                    .GET()
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<Supplier<GHNProvinceResponse>> response = client.send(request, asJson(GHNProvinceResponse.class));
+            if (response.statusCode() != 200) {
+                return null;
+            }
+            return response.body().get().getData();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<GHNDistrictResponse.GHNDistrictData> getDistricts(String token, int provinceId) {
+        try {
+            Map<String, Integer> body = Map.of("province_id", provinceId);
+            URI uri = new URI("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/district");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Content-Type", "application/json")
+                    .header("token", token)
+                    .POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(body)))
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<Supplier<GHNDistrictResponse>> response = client.send(request, asJson(GHNDistrictResponse.class));
+            if (response.statusCode() != 200) {
+                return null;
+            }
+            return response.body().get().getData();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static List<GHNWardResponse.GHNWardData> getWards(String token, int districtId) {
+        try {
+            Map<String, Integer> body = Map.of("district_id", districtId);
+            URI uri = new URI("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/ward");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Content-Type", "application/json")
+                    .header("token", token)
+                    .POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(body)))
+                    .build();
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<Supplier<GHNWardResponse>> response = client.send(request, asJson(GHNWardResponse.class));
+            if (response.statusCode() != 200) {
+                System.out.println(response.statusCode());
+                return null;
+            }
+            return response.body().get().getData();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

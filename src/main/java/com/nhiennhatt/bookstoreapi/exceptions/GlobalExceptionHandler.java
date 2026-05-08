@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -146,6 +147,20 @@ public class GlobalExceptionHandler {
                         .errorCode("VALIDATION_ERROR")
                         .title("Validation error")
                         .detail(Map.of(Objects.requireNonNullElse(ex.getParameter().getParameterName(), "Error"), "Invalid type"))
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({
+            MissingServletRequestParameterException.class
+    })
+    public ResponseEntity<AppExceptionResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
+        return ResponseEntity.status(422)
+                .body(AppExceptionResponse.builder()
+                        .status(422)
+                        .errorCode("VALIDATION_ERROR")
+                        .title("Validation error")
+                        .detail(Map.of(ex.getParameterName(), "Missing parameter"))
                         .build()
                 );
     }

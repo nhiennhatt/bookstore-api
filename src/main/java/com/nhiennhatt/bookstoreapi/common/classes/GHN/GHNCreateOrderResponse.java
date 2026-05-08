@@ -1,12 +1,13 @@
-package com.nhiennhatt.bookstoreapi.common.classes;
+package com.nhiennhatt.bookstoreapi.common.classes.GHN;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class GHNCalShippingFeeResponse {
+public class GHNCreateOrderResponse {
     private int code;
     private String message;
     private GHNCalShippingFeeData data;
@@ -14,6 +15,7 @@ public class GHNCalShippingFeeResponse {
     @Getter(AccessLevel.PUBLIC)
     @Setter(AccessLevel.PUBLIC)
     public static class GHNCalShippingFeeData {
-        private int total;
+        @JsonProperty("order_code")
+        private String orderCode;
     }
 }

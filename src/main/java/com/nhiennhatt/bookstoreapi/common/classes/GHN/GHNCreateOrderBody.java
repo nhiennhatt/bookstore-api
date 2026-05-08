@@ -1,4 +1,4 @@
-package com.nhiennhatt.bookstoreapi.common.classes;
+package com.nhiennhatt.bookstoreapi.common.classes.GHN;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
