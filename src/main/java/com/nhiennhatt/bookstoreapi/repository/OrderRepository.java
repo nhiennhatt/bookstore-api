@@ -3,6 +3,7 @@ package com.nhiennhatt.bookstoreapi.repository;
 import com.nhiennhatt.bookstoreapi.dto.orders.OrderDto;
 import com.nhiennhatt.bookstoreapi.dto.orders.OrderOverviewDto;
 import com.nhiennhatt.bookstoreapi.models.Order;
+import com.nhiennhatt.bookstoreapi.repository.customs.CustomOrderRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface OrderRepository extends JpaRepository<Order, UUID> {
+public interface OrderRepository extends JpaRepository<Order, UUID>, CustomOrderRepository {
     @Query("""
     SELECT new com.nhiennhatt.bookstoreapi.dto.orders.OrderOverviewDto(
         ord.id,

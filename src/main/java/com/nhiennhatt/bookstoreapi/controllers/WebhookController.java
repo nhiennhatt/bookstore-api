@@ -1,12 +1,14 @@
 package com.nhiennhatt.bookstoreapi.controllers;
 
 import com.nhiennhatt.bookstoreapi.services.OrderService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/webhooks")
+@Tag(name = "Webhooks")
 public class WebhookController {
     @Autowired
     private OrderService orderService;

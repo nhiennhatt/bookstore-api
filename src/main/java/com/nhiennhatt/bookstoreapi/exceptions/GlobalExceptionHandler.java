@@ -19,6 +19,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -193,6 +194,26 @@ public class GlobalExceptionHandler {
                         .status(500)
                         .errorCode("INTERNAL_SERVER_ERROR")
                         .title("Internal server error")
+                        .build()
+                );
+    }
+
+    @ExceptionHandler({
+            jakarta.validation.ConstraintViolationException.class
+    })
+    public ResponseEntity<AppExceptionResponse> handleConstraintViolationException(jakarta.validation.ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getConstraintViolations().stream().forEach(violation -> {
+            errors.put(violation.getPropertyPath().toString(), violation.getMessage());
+        });
+
+        return ResponseEntity.status(422)
+                .body(AppExceptionResponse.<Map<String, String>>builder()
+                        .status(422)
+                        .errorCode("VALIDATION_ERROR")
+                        .title("Validation error")
+                        .detail(errors)
                         .build()
                 );
     }

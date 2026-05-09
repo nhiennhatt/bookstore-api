@@ -21,6 +21,7 @@ import com.nhiennhatt.bookstoreapi.utils.GHNUtil;
 import com.nhiennhatt.bookstoreapi.utils.StripeUtils;
 import com.nhiennhatt.bookstoreapi.validations.order.CreateOrderItemValidation;
 import com.nhiennhatt.bookstoreapi.validations.order.CreateOrderValidation;
+import com.nhiennhatt.bookstoreapi.validations.order.OrderFilter;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -297,5 +298,9 @@ public class OrderService {
                 .address(order.getAddress())
                 .orderDetails(orderDetails)
                 .build();
+    }
+
+    public List<Order> getOrders(OrderFilter filter) {
+        return orderRepository.getOrders(filter);
     }
 }
