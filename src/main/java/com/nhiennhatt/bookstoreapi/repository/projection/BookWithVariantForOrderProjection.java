@@ -12,6 +12,7 @@ import java.util.UUID;
 public class BookWithVariantForOrderProjection {
     private UUID bookId;
     private String bookName;
+    private String bookSlug;
     private UUID variantId;
     private String variantName;
     private BookStatus bookStatus;

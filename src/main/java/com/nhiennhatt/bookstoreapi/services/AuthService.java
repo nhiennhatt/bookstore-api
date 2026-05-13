@@ -1,5 +1,6 @@
 package com.nhiennhatt.bookstoreapi.services;
 
+import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
 import com.nhiennhatt.bookstoreapi.common.enums.UserRole;
 import com.nhiennhatt.bookstoreapi.common.enums.UserStatus;
 import com.nhiennhatt.bookstoreapi.dto.user.CreateUserResponse;
@@ -16,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -78,5 +80,14 @@ public class AuthService {
         catch (Exception e) {
             throw new AppException("Invalid refresh token", "INVALID_REFRESH_TOKEN", 401, null, null);
         }
+    }
+
+    @Transactional
+    public void changePassword(String oldPassword, String newPassword, CurrentUser currentUser) {
+        User user = userRepository.findUserById(currentUser.getId());
+        if (!passwordEncoder.matches(oldPassword, user.getPassword()))
+            throw new AppException("Old password is incorrect", "OLD_PASSWORD_INCORRECT", 400, null, null);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

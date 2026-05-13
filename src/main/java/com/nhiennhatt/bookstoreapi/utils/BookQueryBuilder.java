@@ -72,10 +72,10 @@ public class BookQueryBuilder {
 
         if (filter.getKeyword() != null) {
             predicates.add(builder.or(
-                    builder.like(book.get("name"), "%" + filter.getKeyword() + "%"),
-                    builder.like(book.get("description"), "%" + filter.getKeyword() + "%"),
-                    builder.like(variant.get("isbn"), "%" + filter.getKeyword() + "%"),
-                    builder.like(category.get("name"), "%" + filter.getKeyword() + "%")
+                    builder.like((builder.lower(book.get("name"))), "%" + filter.getKeyword().toLowerCase() + "%"),
+                    builder.like(builder.lower(book.get("description")), "%" + filter.getKeyword().toLowerCase() + "%"),
+                    builder.like(builder.lower(variant.get("isbn")), "%" + filter.getKeyword().toLowerCase() + "%"),
+                    builder.like(builder.lower(category.get("name")), "%" + filter.getKeyword().toLowerCase() + "%")
             ));
         }
 

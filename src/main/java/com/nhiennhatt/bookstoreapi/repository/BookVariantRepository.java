@@ -20,7 +20,7 @@ public interface BookVariantRepository extends JpaRepository<BookVariant, UUID>,
     @Query(
             """
             select new com.nhiennhatt.bookstoreapi.repository.projection.BookWithVariantForOrderProjection(
-                b.id, b.name, v.id, v.name, b.status, v.status, v.inventory, v.originPrice, v.salePrice, v.weight
+                b.id, b.name, b.slug, v.id, v.name, b.status, v.status, v.inventory, v.originPrice, v.salePrice, v.weight
             )
             from BookVariant v
             left join Book b on v.bookId = b.id

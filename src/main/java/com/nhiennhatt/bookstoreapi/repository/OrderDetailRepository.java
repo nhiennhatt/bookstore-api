@@ -15,7 +15,7 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, UUID> 
     @Query("""
     SELECT
         new com.nhiennhatt.bookstoreapi.dto.orders.OrderDetailDto(
-            o.id, o.variantId, o.bookId, b.name, o.variantName, o.quantity, o.originUnitPrice, o.unitPrice, o.totalPrice, o.image
+            o.id, o.variantId, o.bookId, b.name, b.slug, o.variantName, o.quantity, o.originUnitPrice, o.unitPrice, o.totalPrice, o.image
         )
     FROM (
         SELECT

@@ -8,6 +8,7 @@ import com.nhiennhatt.bookstoreapi.common.enums.BookStatus;
 import com.nhiennhatt.bookstoreapi.common.enums.BookVariantStatus;
 import com.nhiennhatt.bookstoreapi.common.enums.OrderStatus;
 import com.nhiennhatt.bookstoreapi.common.enums.UserRole;
+import com.nhiennhatt.bookstoreapi.common.interfaces.CreatingOrder;
 import com.nhiennhatt.bookstoreapi.dto.orders.OrderDetailDto;
 import com.nhiennhatt.bookstoreapi.dto.orders.OrderDto;
 import com.nhiennhatt.bookstoreapi.dto.user.MeResponse;
@@ -22,6 +23,7 @@ import com.nhiennhatt.bookstoreapi.utils.StripeUtils;
 import com.nhiennhatt.bookstoreapi.validations.order.CreateOrderItemValidation;
 import com.nhiennhatt.bookstoreapi.validations.order.CreateOrderValidation;
 import com.nhiennhatt.bookstoreapi.validations.order.OrderFilter;
+import com.nhiennhatt.bookstoreapi.validations.order.PreviewOrderValidation;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -75,26 +77,34 @@ public class OrderService {
         this.userRepository = userRepository;
     }
 
-    public OrderDto previewOrder(CreateOrderValidation orderBody, CurrentUser user) {
+    public OrderDto previewOrder(PreviewOrderValidation orderBody, CurrentUser user) {
         Order order = buildOrder(orderBody, user);
         return OrderDto.builder()
                 .address(order.getAddress())
                 .grandTotal(order.getGrandTotal())
                 .shippingFee(order.getShippingFee())
                 .subtotalPrice(order.getSubtotalPrice())
+                .orderDiscount(order.getOrderDiscount())
                 .orderDetails(
-                        order.getDetails().stream().map(d ->
-                                OrderDetailDto.builder()
-                                        .variantId(d.getBookVariant().getId())
-                                        .bookId(d.getBookVariant().getBookId())
-                                        .quantity(d.getQuantity())
-                                        .unitPrice(d.getUnitPrice())
-                                        .totalPrice(d.getTotalPrice())
-                                        .originUnitPrice(d.getOriginUnitPrice())
-                                        .variantName(d.getBookVariant().getName())
-                                        .bookName(d.getBookVariant().getBook().getName())
-                                        .build()
-                        ).toList()
+                        order.getDetails().stream().map(d -> {
+                            String image = null;
+                            try {
+                                image = minioService.getPresignedUrl(d.getBookVariant().getImage());
+                            } catch (Exception ignored) {
+                            }
+                            return OrderDetailDto.builder()
+                                    .variantId(d.getBookVariant().getId())
+                                    .bookId(d.getBookVariant().getBookId())
+                                    .quantity(d.getQuantity())
+                                    .unitPrice(d.getUnitPrice())
+                                    .totalPrice(d.getTotalPrice())
+                                    .originUnitPrice(d.getOriginUnitPrice())
+                                    .variantName(d.getBookVariant().getName())
+                                    .bookName(d.getBookVariant().getBook().getName())
+                                    .bookSlug(d.getBookVariant().getBook().getSlug())
+                                    .image(image)
+                                    .build();
+                        }).toList()
                 )
                 .build();
     }
@@ -189,14 +199,11 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    private Order buildOrder(CreateOrderValidation orderBody, CurrentUser user) {
+    private Order buildOrder(CreatingOrder orderBody, CurrentUser user) {
         List<CreateOrderItemValidation> variants = orderBody.getVariants();
         List<BookWithVariantForOrderProjection> variantDetail = bookVariantRepository.getBookWithVariantForOrder(
                 variants.stream().map(CreateOrderItemValidation::getVariantId).toList()
         );
-        UserAddress address = addressRepository.findUserAddressById(orderBody.getAddressId());
-        if (address == null)
-            throw new AppException("Address not found", "ADDRESS_NOT_FOUND", 404, null, null);
 
         Map<CreateOrderItemValidation, BookWithVariantForOrderProjection> mappedVariants = new HashMap<>();
         variants.forEach(v -> {
@@ -227,24 +234,40 @@ public class OrderService {
                 .map(t -> (t.getValue().getSalePrice() == 0 ? t.getValue().getOriginPrice() : t.getValue().getSalePrice()) * t.getKey().getQuantity())
                 .reduce(0, Integer::sum);
 
-        GHNCalShippingFeeResponse shippingFee = GHNUtil.calShippingFee(
-                ghnToken,
-                GHNCalShippingFeeBody.builder()
-                        .shopId(shopId)
-                        .weight(totalWeight)
-                        .toWardCode(address.getWardCode())
-                        .toDistrictId(address.getProvinceId())
-                        .serviceTypeId(2)
-                        .build()
-        );
+        int orderDiscount = mappedVariants.entrySet().stream()
+                .map(t -> (t.getValue().getSalePrice() == 0 ? 0 : t.getValue().getOriginPrice() - t.getValue().getSalePrice()) * t.getKey().getQuantity())
+                .reduce(0, Integer::sum);
 
-        grandPrice += shippingFee != null && shippingFee.getData() != null ? shippingFee.getData().getTotal() : 0;
-        subtotalPrice += shippingFee != null && shippingFee.getData() != null ? shippingFee.getData().getTotal() : 0;
+        int shippingFee = 0;
+
+        UserAddress address = null;
+
+        if (orderBody.getAddressId() != null) {
+            address = addressRepository.findUserAddressById(orderBody.getAddressId());
+            if (address == null)
+                throw new AppException("Address not found", "ADDRESS_NOT_FOUND", 404, null, null);
+
+            GHNCalShippingFeeResponse shippingFeeRes = GHNUtil.calShippingFee(
+                    ghnToken,
+                    GHNCalShippingFeeBody.builder()
+                            .shopId(shopId)
+                            .weight(totalWeight)
+                            .toWardCode(address.getWardCode())
+                            .toDistrictId(address.getProvinceId())
+                            .serviceTypeId(2)
+                            .build()
+            );
+
+            shippingFee = shippingFeeRes != null && shippingFeeRes.getData() != null ? shippingFeeRes.getData().getTotal() : 0;
+            grandPrice += shippingFee;
+            subtotalPrice += shippingFee;
+        }
 
         Order order = new Order();
         order.setSubtotalPrice(subtotalPrice);
         order.setGrandTotal(grandPrice);
-        order.setShippingFee(shippingFee != null && shippingFee.getData() != null ? shippingFee.getData().getTotal() : 0);
+        order.setShippingFee(shippingFee);
+        order.setOrderDiscount(orderDiscount);
         order.setAddress(address);
         order.setUser(userRepository.getReferenceById(user.getId()));
         order.setStatus(OrderStatus.PAYING);
@@ -262,6 +285,7 @@ public class OrderService {
             detail.getBookVariant().setName(v.getValue().getVariantName());
             detail.getBookVariant().setBook(bookRepository.getReferenceById(v.getValue().getBookId()));
             detail.getBookVariant().getBook().setName(v.getValue().getBookName());
+            detail.getBookVariant().getBook().setSlug(v.getValue().getBookSlug());
             detail.setQuantity(quantity);
             detail.setOriginUnitPrice(originPrice);
             detail.setUnitPrice(salePrice);
@@ -292,11 +316,14 @@ public class OrderService {
                 .shippingDiscount(order.getShippingDiscount())
                 .subtotalPrice(order.getSubtotalPrice())
                 .shippingFee(order.getShippingFee())
+                .deliveryCode(order.getDeliveryCode())
+                .paymentCode(order.getPaymentCode())
                 .grandTotal(order.getGrandTotal())
                 .status(order.getStatus())
                 .user(new MeResponse(order.getUser()))
                 .address(order.getAddress())
                 .orderDetails(orderDetails)
+                .createdAt(order.getCreatedAt())
                 .build();
     }
 

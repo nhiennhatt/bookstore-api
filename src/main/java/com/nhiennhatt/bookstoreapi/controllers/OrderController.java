@@ -9,6 +9,7 @@ import com.nhiennhatt.bookstoreapi.models.Order;
 import com.nhiennhatt.bookstoreapi.services.OrderService;
 import com.nhiennhatt.bookstoreapi.validations.order.CreateOrderValidation;
 import com.nhiennhatt.bookstoreapi.validations.order.OrderFilter;
+import com.nhiennhatt.bookstoreapi.validations.order.PreviewOrderValidation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,7 +65,7 @@ public class OrderController {
                 .limit(limit)
                 .build();
 
-        Set<ConstraintViolation<OrderFilter>> violations = validator.validate(filter, OrderFilter.class);
+        Set<ConstraintViolation<OrderFilter>> violations = validator.validate(filter);
         if (!violations.isEmpty())
             throw new ConstraintViolationException(violations);
 
@@ -82,7 +83,7 @@ public class OrderController {
     @PostMapping("/preview")
     @Operation(security = {@SecurityRequirement(name = "bearer-auth")})
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<OrderDto> previewOrder(@Valid @RequestBody CreateOrderValidation order, @AuthenticationPrincipal CurrentUser user) {
+    public ResponseEntity<OrderDto> previewOrder(@Valid @RequestBody PreviewOrderValidation order, @AuthenticationPrincipal CurrentUser user) {
         return ResponseEntity.ok(orderService.previewOrder(order, user));
     }
 

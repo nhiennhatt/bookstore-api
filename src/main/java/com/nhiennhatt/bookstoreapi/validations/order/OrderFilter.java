@@ -1,6 +1,7 @@
 package com.nhiennhatt.bookstoreapi.validations.order;
 
 import com.nhiennhatt.bookstoreapi.common.enums.OrderStatus;
+import jakarta.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class OrderFilter {
     private Integer districtId;
     private Integer provinceId;
     private String wardCode;
+    @Min(10)
     private int limit;
     private Instant startDate;
     private Instant endDate;

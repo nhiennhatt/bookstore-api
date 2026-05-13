@@ -1,12 +1,16 @@
 package com.nhiennhatt.bookstoreapi.controllers;
 
+import com.nhiennhatt.bookstoreapi.common.classes.CurrentUser;
 import com.nhiennhatt.bookstoreapi.dto.user.CreateUserResponse;
 import com.nhiennhatt.bookstoreapi.dto.user.LoginResponse;
 import com.nhiennhatt.bookstoreapi.models.CustomUserDetails;
 import com.nhiennhatt.bookstoreapi.services.AuthService;
+import com.nhiennhatt.bookstoreapi.validations.user.ChangePasswordValidation;
 import com.nhiennhatt.bookstoreapi.validations.user.CreateUserValidation;
 import com.nhiennhatt.bookstoreapi.validations.user.GetTokenValidation;
 import com.nhiennhatt.bookstoreapi.validations.user.LoginValidation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +52,13 @@ public class AuthController {
     public ResponseEntity<LoginResponse> getToken(@Valid @RequestBody GetTokenValidation body) {
         LoginResponse res = authService.refreshToken(body.getRefreshToken());
         return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/password")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(security = {@SecurityRequirement(name = "bearer-auth")})
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordValidation body, @AuthenticationPrincipal CurrentUser user) {
+        authService.changePassword(body.getOldPassword(), body.getNewPassword(), user);
+        return ResponseEntity.ok().build();
     }
 }

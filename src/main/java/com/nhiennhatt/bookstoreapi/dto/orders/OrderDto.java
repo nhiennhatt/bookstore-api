@@ -6,6 +6,7 @@ import com.nhiennhatt.bookstoreapi.models.UserAddress;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,10 +14,28 @@ import java.util.UUID;
 @Setter
 @SuperBuilder
 public class OrderDto extends OrderOverviewDto {
+    private String deliveryCode;
+    private String paymentCode;
     private List<OrderDetailDto> orderDetails;
 
-    public OrderDto(UUID id, MeResponse user, UserAddress address, OrderStatus status, int subtotalPrice, int shippingFee, int orderDiscount, int shippingDiscount, int grandTotal, List<OrderDetailDto> orderDetails) {
-        super(id, user, address, status, subtotalPrice, shippingFee, orderDiscount, shippingDiscount, grandTotal);
+    public OrderDto(
+            UUID id,
+            MeResponse user,
+            UserAddress address,
+            OrderStatus status,
+            int subtotalPrice,
+            int shippingFee,
+            int orderDiscount,
+            int shippingDiscount,
+            int grandTotal,
+            String paymentCode,
+            String deliveryCode,
+            List<OrderDetailDto> orderDetails,
+            Instant createdAt
+    ) {
+        super(id, user, address, status, subtotalPrice, shippingFee, orderDiscount, shippingDiscount, grandTotal, createdAt);
+        this.paymentCode = paymentCode;
+        this.deliveryCode = deliveryCode;
         this.orderDetails = orderDetails;
     }
 
@@ -30,7 +49,8 @@ public class OrderDto extends OrderOverviewDto {
                 orderOverviewDto.getShippingFee(),
                 orderOverviewDto.getOrderDiscount(),
                 orderOverviewDto.getShippingDiscount(),
-                orderOverviewDto.getGrandTotal()
+                orderOverviewDto.getGrandTotal(),
+                orderOverviewDto.getCreatedAt()
         );
         this.orderDetails = orderDetails;
     }

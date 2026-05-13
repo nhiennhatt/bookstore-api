@@ -10,16 +10,10 @@ import org.hibernate.validator.constraints.Length;
 @Getter
 @Setter
 public class CreateAddressValidation {
-    @NotBlank
-    private String province;
     @Min(1)
     private int provinceId;
-    @NotBlank
-    private String district;
     @Min(1)
     private int districtId;
-    @NotBlank
-    private String ward;
     @NotBlank
     private String wardCode;
     @NotBlank

@@ -1,6 +1,5 @@
 package com.nhiennhatt.bookstoreapi.repository;
 
-import com.nhiennhatt.bookstoreapi.dto.orders.OrderDto;
 import com.nhiennhatt.bookstoreapi.dto.orders.OrderOverviewDto;
 import com.nhiennhatt.bookstoreapi.models.Order;
 import com.nhiennhatt.bookstoreapi.repository.customs.CustomOrderRepository;
@@ -25,7 +24,8 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, CustomOrder
         ord.shippingFee,
         ord.orderDiscount,
         ord.shippingDiscount,
-        ord.grandTotal
+        ord.grandTotal,
+        ord.createdAt
     )
     FROM (
         SELECT
@@ -37,9 +37,11 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, CustomOrder
             o.shippingDiscount as shippingDiscount,
             o.grandTotal as grandTotal,
             o.address.id as addressId,
-            o.user.id as userId
+            o.user.id as userId,
+            o.createdAt as createdAt
         FROM Order o
         WHERE o.user.id = :userId
+        ORDER BY createdAt DESC
     ) ord
     LEFT JOIN User u ON ord.userId = u.id
     LEFT JOIN UserAddress a ON ord.addressId = a.id
