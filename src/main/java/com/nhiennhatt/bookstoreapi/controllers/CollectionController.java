@@ -111,7 +111,7 @@ public class CollectionController {
     public ResponseEntity<List<CollectionBookOverviewDto>> getBooksInCollection(
             @PathVariable("id") UUID id,
             @RequestParam(required = false) @Min(0) Integer cursor,
-            @RequestParam(required = false) @Min(10) @Max(30) Integer limit,
+            @RequestParam(required = false) @Min(5) @Max(30) Integer limit,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) BookStatus bookStatus,
             @RequestParam(required = false) BookVariantStatus bookVariantStatus,
